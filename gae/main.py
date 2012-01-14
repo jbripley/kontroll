@@ -106,7 +106,12 @@ GAE -> Client
 
 """
 
-class DeviceRegisterHandler(webapp.RequestHandler):
+class KontrollRequestHandler(webapp.RequestHandler):
+	def write_json(self, data):
+		self.response.headers["Content-Type"] = "application/json"
+		self.response.out.write(json.dumps(data))
+
+class DeviceRegisterHandler(KontrollRequestHandler):
 	def post(self):
 		body = json.loads(self.request.body)
 		
@@ -117,10 +122,9 @@ class DeviceRegisterHandler(webapp.RequestHandler):
 			"sync_code": d.sync_code,
 			"sync_code_expiry": int(time.mktime(d.sync_code_expiry.timetuple())*1000) # javascript new Date() friendly
 		}
+		self.write_json(response_data)
 		
-		self.response.out.write(json.dumps(response_data))
-		
-class DevicePlaystateHandler(webapp.RequestHandler):
+class DevicePlaystateHandler(KontrollRequestHandler):
 	def post(self):
 		body = json.loads(self.request.body)
 		device_id = body["device_id"]
@@ -131,14 +135,14 @@ class DevicePlaystateHandler(webapp.RequestHandler):
 		
 		send_event_to_client(device_id, Event("playstate", state=state, song=song))
 
-class MainHandler(webapp.RequestHandler):
+class MainHandler(KontrollRequestHandler):
 	def get(self):
 		data = {
 			"beacon_key": CONFIG["beaconpush"]["key"]
 		}
 		self.response.out.write(render("client.html", data))
 		
-class ClientSyncHandler(webapp.RequestHandler):
+class ClientSyncHandler(KontrollRequestHandler):
 	def post(self):
 		body = json.loads(self.request.body)
 		
@@ -157,9 +161,9 @@ class ClientSyncHandler(webapp.RequestHandler):
 		response_data = {
 			"device_id": device_id
 		}
-		self.response.out.write(json.dumps(response_data))
+		self.write_json(response_data)
 
-class ClientPlaystateHandler(webapp.RequestHandler):
+class ClientPlaystateHandler(KontrollRequestHandler):
 	def post(self):
 		body = json.loads(self.request.body)
 
