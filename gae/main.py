@@ -78,7 +78,7 @@ POST /device/register
 << {"device_id": ..., "sync_code": ..., "sync_code_expiry": ...}
 
 POST /device/playstate
->> {"device_id": ..., "state": ["playing" | "paused" | "stopped" | "ads"], song: {"uri": ..., "artist": ..., "album": ..., "track": ...}}
+>> {"device_id": ..., "state": ["playing" | "paused" | "stopped" | "ads"], song: {"uri": ..., "artists": [...], "album": ..., "track": ...}}
 << 
 
 Browser:
@@ -99,7 +99,7 @@ BP Events:
 GAE -> Spotify
 {"recipient": "spapp", "event": "synced", "data": {}}
 {"recipient": "spapp", "event": "change_playstate", "data": {"state": "play"}}
-{"recipient": "spapp", "event": "change_playstate", "data": {"state": "stop"}}
+{"recipient": "spapp", "event": "change_playstate", "data": {"state": "pause"}}
 {"recipient": "spapp", "event": "change_playstate", "data": {"state": "next"}}
 {"recipient": "spapp", "event": "change_playstate", "data": {"state": "previous"}}
 
