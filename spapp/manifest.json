@@ -21,7 +21,6 @@
     "VendorIdentifier": "com.spriot",
     "RequiredPermissions": [
         "http://*.beaconpush.com",
-        "http://localhost",
-        "http://spriot.appspot.com",
+        "http://spkontroll.appspot.com"
     ]
 }
