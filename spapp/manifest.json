@@ -1,10 +1,10 @@
 {
     "RequiredInterface": 1,
     "AppName": {
-        "en": "Spriot"
+        "en": "Kontroll"
     },
     "AppDescription": {
-        "en": "Spriot description"
+        "en": "Kontroll description"
     },
     "AppIcon": {
         "18x18": "resources/icon/18x18.png",
