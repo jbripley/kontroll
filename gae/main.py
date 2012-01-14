@@ -99,7 +99,7 @@ BP Events:
 GAE -> Spotify
 {"recipient": "spapp", "event": "synced", "data": {}}
 {"recipient": "spapp", "event": "change_playstate", "data": {"state": "play"}}
-{"recipient": "spapp", "event": "change_playstate", "data": {"state": "stop"}}
+{"recipient": "spapp", "event": "change_playstate", "data": {"state": "pause"}}
 {"recipient": "spapp", "event": "change_playstate", "data": {"state": "next"}}
 {"recipient": "spapp", "event": "change_playstate", "data": {"state": "previous"}}
 
