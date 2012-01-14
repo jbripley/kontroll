@@ -13,7 +13,6 @@ var kontroll = {
 		kontroll.beacon.listen([kontroll.deviceId()]);
 		
 		kontroll.models.player.observe(kontroll.models.EVENT.CHANGE, kontroll.player.changed);
-		kontroll.player.playing = kontroll.models.player.playing;
 		kontroll.player.changed();
 		
 		window.addEventListener("storage", kontroll.storageChanged(), false);
@@ -22,14 +21,8 @@ var kontroll = {
 	},
 	
 	player: {
-	    playing: false,
+	    playstate: {"state": null, "song": {}},
 	    changed: function(event) {
-	        if (kontroll.player.playing !== kontroll.models.player.playing)
-	        {
-	            console.debug("Skip sending playerstate update with previous playing state: " + kontroll.models.player.playing);
-	            return;
-	        }
-	        
 	        // >> {"device_id": ..., "state": ["playing" | "paused" | "stopped" | "ads"], song: {"uri": ..., "artist": ..., "album": ..., "track": ...}}
 	        var playstate = {"device_id": kontroll.deviceId()};
 	        if (kontroll.models.player.playing === true)
@@ -55,6 +48,16 @@ var kontroll = {
 	            });
 	        }
 	        playstate["song"] = song;
+	        
+	        if (kontroll.player.playstate.state == playstate.state &&
+	            kontroll.player.playstate.song.uri == playstate.song.uri)
+	        {
+	            console.debug("Skip sending playerstate update, same play state and track");
+	            console.debug(playstate);
+	            return;
+	        }
+	        
+	        kontroll.player.playstate = playstate;
 	        
 	        kontroll.remote.devicePlaystate(playstate, function()
 	        {
@@ -91,16 +94,13 @@ var kontroll = {
     		    case "change_playstate":
     		    {
     		        console.debug("Playstate: " + eventInfo.data.state);
-    		        kontroll.player.playing = kontroll.models.player.playing;
     		        switch(eventInfo.data.state)
     		        {
     		            case "play":
-    		                kontroll.player.playing = true;
     		                kontroll.models.player.playing = true;
     		                break;
     		                
     		            case "pause":
-    		                kontroll.player.playing = false;
     		                kontroll.models.player.playing = false;
     		                break;
     		            
