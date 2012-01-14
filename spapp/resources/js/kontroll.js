@@ -1,21 +1,20 @@
-var spriot = {
+var kontroll = {
 	sp: null,
-	currentSpriot: {
+	currentPlaylist: {
 		"name": null,
 		"playlistUri": null,
-		"password": null,
 		"country": null
 	},
 	init: function() {
-		spriot.sp = getSpotifyApi(1);
-		spriot.beaconListen(["test"]);		
-		var playlists = spriot.sp.core.library.getPlaylists();
+		kontroll.sp = getSpotifyApi(1);
+		kontroll.beaconListen(["test"]);		
+		var playlists = kontroll.sp.core.library.getPlaylists();
 		console.log(playlists);
-		spriot.create.init();
+		kontroll.create.init();
 	},
 	beaconListen: function(channels) {
 	    Beacon.connect('018efdb4', channels, {"log":true, "forceClient": "XhrLongPoll"});
-	    Beacon.listen(spriot.beaconMessage);
+	    Beacon.listen(kontroll.beaconMessage);
 		
 	},
 	beaconMessage: function(data) {
@@ -26,11 +25,11 @@ var spriot = {
 			$("#create_button").click(function(e){
 				var name = $("#create_name").val();
 				var playlist_uri = $("#create_playlist").val();
-				spriot.create.start(name, playlist_uri)
+				kontroll.create.start(name, playlist_uri)
 			});
 		},
 		start: function (name, playlist_uri) {
-			var country_code = spriot.sp.core.country;
+			var country_code = kontroll.sp.core.country;
 			console.log("name = " + name);
 			console.log("playlist_uri = " + playlist_uri);
 			console.log("country_code = " + country_code);
@@ -45,6 +44,6 @@ var spriot = {
 };
 
 $(document).ready(function() {
-	spriot.init();
+	kontroll.init();
 });
 
