@@ -8,7 +8,8 @@
 		<script type="text/javascript" src="http://cdn.beaconpush.com/clients/client-1.js"></script>
 		<script type="text/javascript">
 			kontroll.beaconKey = "{{ beacon_key }}";
-		</script>	</head>
+		</script>	
+	</head>
 	<body>
 		<div id="sync">
 			<input id="sync_code" type="number" min="100000" max="999999"></input>
@@ -19,6 +20,12 @@
 			<button class="playstate" id="playstate_stop"  data-playstate="stop">Stop</button>
 			<button class="playstate" id="playstate_pause" data-playstate="pause">Pause</button>
 			<button class="playstate" id="playstate_skip"  data-playstate="skip">&gt;&gt;</button>
+			<div id="song">
+				<span id="song_artist">Artist</span>
+				(<span id="song_album">Album</span>)
+				-
+				<span id="song_track">Track</span>
+			</div>
 		</div>
 	</body>
 </html>

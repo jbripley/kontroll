@@ -38,12 +38,22 @@ class Event(object):
 		self.event = event
 		self.data.update(kwargs)
 	
-def send_event(device_id, event):
+def send_event_to_client(device_id, event):
 	msg = {
+		"recipient": "client",
 		"event": event.event,
 		"data": event.data
 	}
 	n = bp.channel_send_message(device_id, msg)
+
+def send_event_to_spapp(device_id, event):
+	msg = {
+		"recipient": "spapp",
+		"event": event.event,
+		"data": event.data
+	}
+	n = bp.channel_send_message(device_id, msg)
+	
 
 def render(template_name, data=None):
 	if not data:
@@ -82,13 +92,13 @@ POST /client/playstate
 
 BP Events:
 
-Web -> Spotify
+GAE -> Spotify
 {"event": "synced", "data": {}}
 {"event": "change_playstate", "data": {"state": "play"}}
 {"event": "change_playstate", "data": {"state": "stop"}}
 {"event": "change_playstate", "data": {"state": "skip"}}
 
-Web -> Client
+GAE -> Client
 {"event": "playstate", "data": {"state": "paused"}, "song": ...}
 {"event": "playstate", "data": {"state": "stopped"}}
 {"event": "playstate", "data": {"state": "playing"}, "song": ...}
@@ -119,11 +129,14 @@ class DevicePlaystateHandler(webapp.RequestHandler):
 		if state in ("playing", "paused"):
 			song = body["song"]
 		
-		send_event(device_id, Event("playstate", state=state, song=song))
+		send_event_to_client(device_id, Event("playstate", state=state, song=song))
 
 class MainHandler(webapp.RequestHandler):
 	def get(self):
-		self.response.out.write(render("client.html"))
+		data = {
+			"beacon_key": CONFIG["beaconpush"]["key"]
+		}
+		self.response.out.write(render("client.html", data))
 		
 class ClientSyncHandler(webapp.RequestHandler):
 	def post(self):
@@ -136,7 +149,7 @@ class ClientSyncHandler(webapp.RequestHandler):
 		if not device:
 			return self.error(404)
 		device_id = device.device_id
-		send_event(device_id, Event("synced"))
+		send_event_to_spapp(device_id, Event("synced"))
 		
 		session = get_current_session()
 		session["device_id"] = device_id
@@ -152,7 +165,7 @@ class ClientPlaystateHandler(webapp.RequestHandler):
 
 		state = body["state"]
 
-		if state not in ("play", "stop", "skip"):
+		if state not in ("play", "stop", "pause", "skip"):
 			return self.error(401)
 
 		session = get_current_session()
@@ -161,7 +174,7 @@ class ClientPlaystateHandler(webapp.RequestHandler):
 			return self.error(403)
 
 		e = Event("change_playstate", state=state)
-		send_event(device_id, e)
+		send_event_to_spapp(device_id, e)
 
 
 def main():

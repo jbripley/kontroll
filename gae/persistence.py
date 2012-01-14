@@ -31,7 +31,8 @@ def sync_device(sync_code):
 		
 	if device.synced:
 		return None
-		
+	
+	device.sync_code = None
 	device.synced = True
 	device.put()
 	
