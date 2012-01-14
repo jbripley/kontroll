@@ -15,6 +15,8 @@ var kontroll = {
 		kontroll.player.changed();
 		
 		window.addEventListener("storage", kontroll.storageChanged(), false);
+		
+		//jQuery("body").addEventListener("drop", kontroll.selectedPlaylist.drop, false);
 	},
 	
 	player: {
@@ -59,14 +61,14 @@ var kontroll = {
 	        Beacon.connect('018efdb4', channels, {"log":true, "forceClient": "XhrLongPoll"});
 	        Beacon.listen(kontroll.beacon.message);
         },
-        message: function(data) {
-    		console.log("Beacon: " + data);
-    		if (data.recipient != "spapp")
+        message: function(eventInfo) {
+    		console.log("Beacon: " + eventInfo);
+    		if (eventInfo.recipient != "spapp")
     		{
     		    return;
     		}
     		
-    		switch(data.event)
+    		switch(eventInfo.event)
     		{
     		    case "synced":
     		    {
@@ -75,9 +77,34 @@ var kontroll = {
     		        
     		        kontroll.selectedPlaylist.show();
     		    }
+    		    break;
+    		    
+    		    case "change_playstate":
+    		    {
+    		        switch(eventInfo.data.state)
+    		        {
+    		            case "play":
+    		                kontroll.models.player.playing = true;
+    		                break;
+    		                
+    		            case "pause":
+    		                kontroll.models.player.playing = false;
+    		                break;
+    		            
+    		            case "next":
+    		                kontroll.models.player.next();
+    		                break;
+    		            
+    		            case "previous":
+    		                kontroll.models.player.previous(false);
+    		                break;
+    		        }
+    		    }
+    		    break;
+    		    
     		    default:
     		    {
-    		        console.debug("Unknown event from beacon: " + data.event);
+    		        console.debug("Unknown event from beacon: " + eventInfo.event);
     		    }
     		}
     	}
@@ -96,6 +123,12 @@ var kontroll = {
 		hide: function()
 		{
 		    jQuery("#playlist").hide();
+		},
+		
+		drop: function(event)
+		{
+		    event.stopPropagation(); // Stops some browsers from redirecting.
+            event.preventDefault();
 		}
 	},
 	

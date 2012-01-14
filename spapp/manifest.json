@@ -11,16 +11,19 @@
         "64x64": "resources/icon/18x18.png",
         "128x128": "resources/icon/18x18.png"
     },
-    "AppUrl": "http://www.spriot.com",
-    "BundleIdentifier": "spriot",
+    "AppUrl": "http://spkontroll.appspot.com",
+    "BundleIdentifier": "spkontroll.appspot.com",
     "BundleType": "Application",
-    "BundleVersion": "0.3",
+    "BundleVersion": "0.1",
     "SupportedLanguages": [
         "en"
     ],
-    "VendorIdentifier": "com.spriot",
+    "VendorIdentifier": "spkonsoll.appspot.com",
     "RequiredPermissions": [
         "http://*.beaconpush.com",
         "http://spkontroll.appspot.com"
+    ],
+    "AcceptedLinkTypes": [
+        "playlist"
     ]
 }
