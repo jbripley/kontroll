@@ -11,7 +11,47 @@ var kontroll = {
 		
 		kontroll.beacon.listen([kontroll.deviceId()]);
 		
+		kontroll.models.player.observe(kontroll.models.EVENT.CHANGE, kontroll.player.changed);
+		kontroll.player.changed();
+		
 		window.addEventListener("storage", kontroll.storageChanged(), false);
+	},
+	
+	player: {
+	    changed: function(event) {
+	        // >> {"device_id": ..., "state": ["playing" | "paused" | "stopped" | "ads"], song: {"uri": ..., "artist": ..., "album": ..., "track": ...}}
+	        var playstate = {"device_id": kontroll.deviceId()};
+	        
+	        if (kontroll.models.player.playing === true)
+	        {
+	            playstate["state"] = "playing";
+	        }
+	        else
+	        {
+	            playstate["state"] = "paused";
+	        }
+	        
+	        var song = {};
+	        if (kontroll.models.player.track)
+	        {
+	            song["uri"] = kontroll.models.player.track.uri;
+	            song["album"] = kontroll.models.player.track.album.name;
+	            song["track"] = kontroll.models.player.track.name;
+	            song["image"] = kontroll.models.player.track.image;
+	            
+	            song["artists"] = [];
+	            jQuery.each(kontroll.models.player.track.artists, function(index, artist)
+	            {
+	               song["artists"].push(artist.name);
+	            });
+	        }
+	        playstate["song"] = song;
+	        
+	        kontroll.remote.devicePlaystate(playstate, function()
+	        {
+	            console.log("Updated playstate");
+	        });
+	    }
 	},
 	
 	beacon: {
@@ -120,6 +160,17 @@ var kontroll = {
 	            {
 	                // {"device_id": ..., "sync_code": ..., "sync_code_expiry": ...}
 	                return callback(data.sync_code);
+	            },
+	            "json");
+	    },
+	    devicePlaystate: function(playstate, callback)
+	    {
+	        var url = kontroll.apiEndpoint + "/device/playstate";
+	        jQuery.post(url,
+	            JSON.stringify(playstate),
+	            function(data, textStatus, jqXHR)
+	            {
+	                return callback();
 	            },
 	            "json");
 	    }
