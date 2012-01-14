@@ -78,7 +78,7 @@ POST /device/register
 << {"device_id": ..., "sync_code": ..., "sync_code_expiry": ...}
 
 POST /device/playstate
->> {"device_id": ..., "state": ["playing" | "paused" | "stopped" | "ads"], song: {"uri": ..., "artist": ..., "album": ..., "track": ...}}
+>> {"device_id": ..., "state": ["playing" | "paused" | "stopped" | "ads"], song: {"uri": ..., "artists": [...], "album": ..., "track": ...}}
 << 
 
 Browser:
