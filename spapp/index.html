@@ -3,14 +3,15 @@
 	<head>
 	  	<meta charset="utf-8" />
 		<title>Kontroll</title>
+		
 		<link rel="stylesheet" href="sp://import/css/eve.css" type="text/css" />
 		<link rel="stylesheet" href="sp://import/css/shared.css" type="text/css" />
 		<link rel="stylesheet" href="sp://import/css/api.css" type="text/css" />
 		<link rel="stylesheet" href="sp://kontroll/resources/css/kontroll.css" type="text/css" />
+		
 		<script src="http://cdn.beaconpush.com/clients/client-1.js"></script>
 		<script src="sp://kontroll/resources/js/jquery-1.7.1.min.js"></script>
 		<script src="sp://kontroll/resources/js/kontroll.js"></script>
-		<!-- <script src="http://ajax.googleapis.com/ajax/libs/dojo/1.7.0/dojo/dojo.js" type="text/javascript"></script> -->
 	</head>
 	<body>
 		<div id="about">
@@ -18,9 +19,6 @@
 			<p>
 				Control a Spotify desktop client from any web browser.
 			</p>
-			
-			<h2>Selected Playlist</h2>
-			<p id="selected-playlist"></p>
 		</div>
 		
 		<div id="sync" style="display: none;">
@@ -29,7 +27,9 @@
 		</div>
 		
 		<div id="playlist" style="display: none;">
-		    PLAYLIST
+		    <h2>Selected Playlist</h2>
+			<p id="playlist-name"></p>
+			<div id="playlist-content"></div>
 		</div>
 	</body>
 </html>

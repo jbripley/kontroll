@@ -8,6 +8,7 @@ var kontroll = {
 	    
 		kontroll.sp = getSpotifyApi(1);
 		kontroll.models = kontroll.sp.require("sp://import/scripts/api/models");
+		kontroll.views = kontroll.sp.require("sp://import/scripts/api/views");
 		
 		kontroll.beacon.listen([kontroll.deviceId()]);
 		
@@ -123,12 +124,20 @@ var kontroll = {
 	},
 	
 	selectedPlaylist: {
-		"name": null,
-		"playlistUri": null,
-		"country": null,
+		"name": "Den Stora Festen(tm) - Middag",
+		"playlistUri": "spotify:user:nollbit:playlist:7gggs0YIY6KjYE2IqD49Yj",
 		
 		show: function()
 		{
+		    var pl = kontroll.models.Playlist.fromURI(kontroll.selectedPlaylist.playlistUri);
+            var list = new kontroll.views.List(pl);
+
+            jQuery("#playlist-name").replaceWith(kontroll.selectedPlaylist.name);
+            jQuery("#playlist-content").append(list.node);
+            
+            // jQuery("#playlist-content").children('a[href="+  "]')
+            
+            // sp-track-selected sp-track-playing
 		    jQuery("#playlist").show();
 		},
 		
