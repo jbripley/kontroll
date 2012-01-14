@@ -5,14 +5,20 @@
 		<script src="/static/jquery-1.7.1.min.js"></script>
 		<script src="/static/client.js"></script>
 		<link rel="stylesheet" href="/static/client.css" type="text/css" />
-	</head>
+		<script type="text/javascript" src="http://cdn.beaconpush.com/clients/client-1.js"></script>
+		<script type="text/javascript">
+			kontroll.beaconKey = "{{ beacon_key }}";
+		</script>	</head>
 	<body>
 		<div id="sync">
 			<input id="sync_code" type="number" min="100000" max="999999"></input>
 			<button id="do_sync">Sync</button>
 		</div>
 		<div id="client">
-			<button id="playstate_play">Play</button>
+			<button class="playstate" id="playstate_play"  data-playstate="play">Play</button>
+			<button class="playstate" id="playstate_stop"  data-playstate="stop">Stop</button>
+			<button class="playstate" id="playstate_pause" data-playstate="pause">Pause</button>
+			<button class="playstate" id="playstate_skip"  data-playstate="skip">&gt;&gt;</button>
 		</div>
 	</body>
 </html>

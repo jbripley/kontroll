@@ -1,0 +1,27 @@
+{
+    "RequiredInterface": 1,
+    "AppName": {
+        "en": "Spriot"
+    },
+    "AppDescription": {
+        "en": "Spriot description"
+    },
+    "AppIcon": {
+        "18x18": "resources/icon/18x18.png",
+        "64x64": "resources/icon/18x18.png",
+        "128x128": "resources/icon/18x18.png"
+    },
+    "AppUrl": "http://www.spriot.com",
+    "BundleIdentifier": "spriot",
+    "BundleType": "Application",
+    "BundleVersion": "0.3",
+    "SupportedLanguages": [
+        "en"
+    ],
+    "VendorIdentifier": "com.spriot",
+    "RequiredPermissions": [
+        "http://*.beaconpush.com",
+        "http://localhost",
+        "http://spriot.appspot.com",
+    ]
+}

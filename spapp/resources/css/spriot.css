@@ -1,0 +1,15 @@
+@import url("sp://import/css/eve.css");
+
+body {
+	margin: 10px;
+}
+
+#create #create_name {
+	width: 400px;
+	font-size: 20px;
+}
+
+#create .new-button.create {
+	display: block;
+	margin-top: 5px;
+}
