@@ -14,7 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import json, time, os
+import time, os
+try: 
+    import json
+except:
+    from django.utils import simplejson as json
 
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
@@ -31,41 +35,41 @@ CONFIG = get_config()
 bp = BeaconPush(api_key=CONFIG["beaconpush"]["key"], secret_key=CONFIG["beaconpush"]["secret"])
 
 class Event(object):
-	event = ""
-	data = {}
-	
-	def __init__(self, event, **kwargs):
-		self.event = event
-		self.data.update(kwargs)
-	
+    event = ""
+    data = {}
+    
+    def __init__(self, event, **kwargs):
+        self.event = event
+        self.data.update(kwargs)
+    
 def send_event_to_client(device_id, event):
-	msg = {
-		"recipient": "client",
-		"event": event.event,
-		"data": event.data
-	}
-	n = bp.channel_send_message(device_id, msg)
+    msg = {
+        "recipient": "client",
+        "event": event.event,
+        "data": event.data
+    }
+    n = bp.channel_send_message(device_id, msg)
 
 def send_event_to_spapp(device_id, event):
-	msg = {
-		"recipient": "spapp",
-		"event": event.event,
-		"data": event.data
-	}
-	n = bp.channel_send_message(device_id, msg)
-	
+    msg = {
+        "recipient": "spapp",
+        "event": event.event,
+        "data": event.data
+    }
+    n = bp.channel_send_message(device_id, msg)
+    
 
 def render(template_name, data=None):
-	if not data:
-		data = {}
+    if not data:
+        data = {}
 
-	session = get_current_session()
-	data.update({
-		"device_id": session.get("device_id", None)
-	})
+    session = get_current_session()
+    data.update({
+        "device_id": session.get("device_id", None)
+    })
 
-	template_path = os.path.join(os.path.dirname(__file__), "templates", template_name)
-	return template.render(template_path, data)
+    template_path = os.path.join(os.path.dirname(__file__), "templates", template_name)
+    return template.render(template_path, data)
 
 """
 Spotify:
@@ -93,105 +97,113 @@ POST /client/playstate
 BP Events:
 
 GAE -> Spotify
-{"event": "synced", "data": {}}
-{"event": "change_playstate", "data": {"state": "play"}}
-{"event": "change_playstate", "data": {"state": "stop"}}
-{"event": "change_playstate", "data": {"state": "skip"}}
+{"recipient": "spapp", "event": "synced", "data": {}}
+{"recipient": "spapp", "event": "change_playstate", "data": {"state": "play"}}
+{"recipient": "spapp", "event": "change_playstate", "data": {"state": "stop"}}
+{"recipient": "spapp", "event": "change_playstate", "data": {"state": "skip"}}
 
 GAE -> Client
-{"event": "playstate", "data": {"state": "paused"}, "song": ...}
-{"event": "playstate", "data": {"state": "stopped"}}
-{"event": "playstate", "data": {"state": "playing"}, "song": ...}
-{"event": "playstate", "data": {"state": "ads"}}
+{"recipient": "client", "event": "playstate", "data": {"state": "paused"}, "song": ...}
+{"recipient": "client", "event": "playstate", "data": {"state": "stopped"}}
+{"recipient": "client", "event": "playstate", "data": {"state": "playing"}, "song": ...}
+{"recipient": "client", "event": "playstate", "data": {"state": "ads"}}
 
 """
 
 class KontrollRequestHandler(webapp.RequestHandler):
-	def write_json(self, data):
-		self.response.headers["Content-Type"] = "application/json"
-		self.response.out.write(json.dumps(data))
+    def set_cors(self):
+        self.response.headers["Access-Control-Allow-Origin"] = "*"
+        
+    def write_empty(self):
+        self.set_cors()
+        
+    def write_json(self, data):
+        self.set_cors()
+        self.response.headers["Content-Type"] = "application/json"
+        self.response.out.write(json.dumps(data))
 
 class DeviceRegisterHandler(KontrollRequestHandler):
-	def post(self):
-		body = json.loads(self.request.body)
-		
-		d = create_device(body["device_id"])
+    def post(self):
+        body = json.loads(self.request.body)
+        
+        d = create_device(body["device_id"])
 
-		response_data = {
-			"device_id": d.device_id,
-			"sync_code": d.sync_code,
-			"sync_code_expiry": int(time.mktime(d.sync_code_expiry.timetuple())*1000) # javascript new Date() friendly
-		}
-		self.write_json(response_data)
-		
+        response_data = {
+            "device_id": d.device_id,
+            "sync_code": d.sync_code,
+            "sync_code_expiry": int(time.mktime(d.sync_code_expiry.timetuple())*1000) # javascript new Date() friendly
+        }
+        self.write_json(response_data)
+        
 class DevicePlaystateHandler(KontrollRequestHandler):
-	def post(self):
-		body = json.loads(self.request.body)
-		device_id = body["device_id"]
-		state = body["state"]
-		song = None
-		if state in ("playing", "paused"):
-			song = body["song"]
-		
-		send_event_to_client(device_id, Event("playstate", state=state, song=song))
+    def post(self):
+        body = json.loads(self.request.body)
+        device_id = body["device_id"]
+        state = body["state"]
+        song = None
+        if state in ("playing", "paused"):
+            song = body["song"]
+        
+        send_event_to_client(device_id, Event("playstate", state=state, song=song))
+        self.write_empty()
 
 class MainHandler(KontrollRequestHandler):
-	def get(self):
-		data = {
-			"beacon_key": CONFIG["beaconpush"]["key"]
-		}
-		self.response.out.write(render("client.html", data))
-		
+    def get(self):
+        data = {
+            "beacon_key": CONFIG["beaconpush"]["key"]
+        }
+        self.response.out.write(render("client.html", data))
+        
 class ClientSyncHandler(KontrollRequestHandler):
-	def post(self):
-		body = json.loads(self.request.body)
-		
-		sync_code = body["sync_code"]
-		
-		device = sync_device(sync_code)
-		
-		if not device:
-			return self.error(404)
-		device_id = device.device_id
-		send_event_to_spapp(device_id, Event("synced"))
-		
-		session = get_current_session()
-		session["device_id"] = device_id
-		
-		response_data = {
-			"device_id": device_id
-		}
-		self.write_json(response_data)
+    def post(self):
+        body = json.loads(self.request.body)
+        
+        sync_code = body["sync_code"]
+        
+        device = sync_device(sync_code)
+        
+        if not device:
+            return self.error(404)
+        device_id = device.device_id
+        send_event_to_spapp(device_id, Event("synced"))
+        
+        session = get_current_session()
+        session["device_id"] = device_id
+        
+        response_data = {
+            "device_id": device_id
+        }
+        self.write_json(response_data)
 
 class ClientPlaystateHandler(KontrollRequestHandler):
-	def post(self):
-		body = json.loads(self.request.body)
+    def post(self):
+        body = json.loads(self.request.body)
 
-		state = body["state"]
+        state = body["state"]
 
-		if state not in ("play", "stop", "pause", "skip"):
-			return self.error(401)
+        if state not in ("play", "stop", "pause", "skip"):
+            return self.error(401)
 
-		session = get_current_session()
-		device_id = session.get("device_id")
-		if not device_id:
-			return self.error(403)
+        session = get_current_session()
+        device_id = session.get("device_id")
+        if not device_id:
+            return self.error(403)
 
-		e = Event("change_playstate", state=state)
-		send_event_to_spapp(device_id, e)
-
+        e = Event("change_playstate", state=state)
+        send_event_to_spapp(device_id, e)
+        self.write_empty()
 
 def main():
-	application = webapp.WSGIApplication(
-		[
-			('/device/register', 	DeviceRegisterHandler),
-			('/device/playstate', 	DevicePlaystateHandler),
-			('/client/sync', 		ClientSyncHandler),
-			('/client/playstate', 	ClientPlaystateHandler),
-			('/', MainHandler)
-		], debug=True)
-	util.run_wsgi_app(application)
+    application = webapp.WSGIApplication(
+        [
+            ('/device/register',     DeviceRegisterHandler),
+            ('/device/playstate',     DevicePlaystateHandler),
+            ('/client/sync',         ClientSyncHandler),
+            ('/client/playstate',     ClientPlaystateHandler),
+            ('/', MainHandler)
+        ], debug=True)
+    util.run_wsgi_app(application)
 
 
 if __name__ == '__main__':
-	main()
+    main()
