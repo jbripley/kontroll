@@ -22,7 +22,6 @@ var kontroll = {
 		var playstate = e.data.state;
 		var verb = {
 			"playing": "play",
-			"stopped": "stop",
 			"paused": "pause",
 			"ads": null, // special case
 		}[playstate];

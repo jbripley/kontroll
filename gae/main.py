@@ -78,7 +78,7 @@ POST /device/register
 << {"device_id": ..., "sync_code": ..., "sync_code_expiry": ...}
 
 POST /device/playstate
->> {"device_id": ..., "state": ["playing" | "paused" | "stopped" | "ads"], song: ...songinfo...}
+>> {"device_id": ..., "state": ["playing" | "paused" | "stopped" | "ads"], song: {"uri": ..., "artist": ..., "album": ..., "track": ...}}
 << 
 
 Browser:
@@ -91,7 +91,7 @@ POST /client/sync
 << {"device_id": ...}
 
 POST /client/playstate
->> {"state": "play"} stop, skip
+>> {"state": "play"} stop, next, previous
 
 
 BP Events:
@@ -100,7 +100,8 @@ GAE -> Spotify
 {"recipient": "spapp", "event": "synced", "data": {}}
 {"recipient": "spapp", "event": "change_playstate", "data": {"state": "play"}}
 {"recipient": "spapp", "event": "change_playstate", "data": {"state": "stop"}}
-{"recipient": "spapp", "event": "change_playstate", "data": {"state": "skip"}}
+{"recipient": "spapp", "event": "change_playstate", "data": {"state": "next"}}
+{"recipient": "spapp", "event": "change_playstate", "data": {"state": "previous"}}
 
 GAE -> Client
 {"recipient": "client", "event": "playstate", "data": {"state": "paused"}, "song": ...}
@@ -181,7 +182,7 @@ class ClientPlaystateHandler(KontrollRequestHandler):
 
         state = body["state"]
 
-        if state not in ("play", "stop", "pause", "skip"):
+        if state not in ("play", "stop", "pause", "next", "previous"):
             return self.error(401)
 
         session = get_current_session()

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>spremote</title>
+		<title>Kontroll</title>
 		<script src="/static/jquery-1.7.1.min.js"></script>
 		<script src="/static/client.js"></script>
 		<link rel="stylesheet" href="/static/client.css" type="text/css" />
@@ -16,10 +16,10 @@
 			<button id="do_sync">Sync</button>
 		</div>
 		<div id="client">
-			<button class="playstate" id="playstate_play"  data-playstate="play">Play</button>
-			<button class="playstate" id="playstate_stop"  data-playstate="stop">Stop</button>
-			<button class="playstate" id="playstate_pause" data-playstate="pause">Pause</button>
-			<button class="playstate" id="playstate_skip"  data-playstate="skip">&gt;&gt;</button>
+			<button class="playstate" id="playstate_previous"  	data-playstate="previous">&lt;&lt;</button>
+			<button class="playstate" id="playstate_play"  		data-playstate="play">Play</button>
+			<button class="playstate" id="playstate_pause" 		data-playstate="pause">Pause</button>
+			<button class="playstate" id="playstate_next"  		data-playstate="next">&gt;&gt;</button>
 			<div id="song">
 				<span id="song_artist">Artist</span>
 				(<span id="song_album">Album</span>)
