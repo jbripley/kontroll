@@ -8,6 +8,8 @@ var kontroll = {
 		console.log("New song");
 		console.log(song);
 		$("#song").hide(200, function(){
+            if (song == null) return;
+             
 			$("#song_artist").text(song.artist);
 			$("#song_album").text(song.album);
 			$("#song_track").text(song.track);
@@ -33,12 +35,20 @@ var kontroll = {
 			$("#playstate_"+verb).addClass("active");
 		}
 		
-		var song = e.data.song;
 		
-		if (kontroll.currentState.currentSongUri != song.uri) {
-			kontroll.currentState.currentSongUri = song.uri;
+		var song = null;
+		var songUri = null;
+		
+		if (playstate == "playing" || playstate == "paused") {
+    		song = e.data.song;
+    		songUri = song.uri;
+		}
+
+		if (kontroll.currentState.currentSongUri != songUri) {
+			kontroll.currentState.currentSongUri = songUri;
 			kontroll.onNewSong(song);
 		}
+		
 	},
 	onBeaconMessage: function(e) {
 		if (e.recipient != "client") {
