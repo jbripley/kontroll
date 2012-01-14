@@ -12,6 +12,7 @@ var kontroll = {
 		kontroll.beacon.listen([kontroll.deviceId()]);
 		
 		kontroll.models.player.observe(kontroll.models.EVENT.CHANGE, kontroll.player.changed);
+		kontroll.player.playing = kontroll.models.player.playing;
 		kontroll.player.changed();
 		
 		window.addEventListener("storage", kontroll.storageChanged(), false);
@@ -20,10 +21,16 @@ var kontroll = {
 	},
 	
 	player: {
+	    playing: false,
 	    changed: function(event) {
+	        if (kontroll.player.playing !== kontroll.models.player.playing)
+	        {
+	            console.debug("Skip sending playerstate update with previous playing state: " + kontroll.models.player.playing);
+	            return;
+	        }
+	        
 	        // >> {"device_id": ..., "state": ["playing" | "paused" | "stopped" | "ads"], song: {"uri": ..., "artist": ..., "album": ..., "track": ...}}
 	        var playstate = {"device_id": kontroll.deviceId()};
-	        
 	        if (kontroll.models.player.playing === true)
 	        {
 	            playstate["state"] = "playing";
@@ -39,7 +46,6 @@ var kontroll = {
 	            song["uri"] = kontroll.models.player.track.uri;
 	            song["album"] = kontroll.models.player.track.album.name;
 	            song["track"] = kontroll.models.player.track.name;
-	            song["image"] = kontroll.models.player.track.image;
 	            
 	            song["artists"] = [];
 	            jQuery.each(kontroll.models.player.track.artists, function(index, artist)
@@ -52,6 +58,7 @@ var kontroll = {
 	        kontroll.remote.devicePlaystate(playstate, function()
 	        {
 	            console.log("Updated playstate");
+	            console.log(playstate);
 	        });
 	    }
 	},
@@ -62,11 +69,12 @@ var kontroll = {
 	        Beacon.listen(kontroll.beacon.message);
         },
         message: function(eventInfo) {
-    		console.log("Beacon: " + eventInfo);
     		if (eventInfo.recipient != "spapp")
     		{
     		    return;
     		}
+    		
+    		console.debug("Beacon message, event: " + eventInfo.event);
     		
     		switch(eventInfo.event)
     		{
@@ -81,13 +89,17 @@ var kontroll = {
     		    
     		    case "change_playstate":
     		    {
+    		        console.debug("Playstate: " + eventInfo.data.state);
+    		        kontroll.player.playing = kontroll.models.player.playing;
     		        switch(eventInfo.data.state)
     		        {
     		            case "play":
+    		                kontroll.player.playing = true;
     		                kontroll.models.player.playing = true;
     		                break;
     		                
     		            case "pause":
+    		                kontroll.player.playing = false;
     		                kontroll.models.player.playing = false;
     		                break;
     		            
