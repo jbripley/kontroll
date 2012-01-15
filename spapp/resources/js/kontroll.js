@@ -20,6 +20,13 @@ var kontroll = {
 
 		// Handle items dropped'on your icon
         kontroll.models.application.observe(kontroll.models.EVENT.LINKSCHANGED, kontroll.links.changed);
+        
+        // Handle items dropped in the app
+        var drop = document.querySelector('#playlist-dnd');
+    	drop.addEventListener('dragenter', kontroll.playlistDnd.dragEnter, false);
+    	drop.addEventListener('dragover', kontroll.playlistDnd.dragOver, false);
+    	drop.addEventListener('dragleave', kontroll.playlistDnd.dragLeave, false);
+    	drop.addEventListener('drop', kontroll.playlistDnd.drop, false);
 	},
 
 	player: {
@@ -281,9 +288,37 @@ var kontroll = {
 	    
 	    hide: function(selectedPlaylist)
 	    {
+	        
 	        jQuery("#playlist-dnd").hide();
 	        kontroll.selectedPlaylist.show(selectedPlaylist);
-	    }
+	    },
+	    
+	    dragEnter: function(e)
+	    {
+    		this.style.background = '#444444';
+    	},
+
+    	dragOver: function(e)
+    	{
+    		e.preventDefault();
+    		e.dataTransfer.dropEffect = 'copy';  // See the section on the DataTransfer object.
+    		return false;
+    	},
+
+    	dragLeave: function(e)
+    	{
+    		this.style.background = '#333333';
+    	},
+
+    	drop: function(e)
+    	{
+    		this.style.background = '#333333';
+    		var uri = e.dataTransfer.getData('Text');
+    		kontroll.models.Playlist.fromURI(uri, function(playlist)
+    	    {
+    	        kontroll.playlistDnd.hide(playlist);
+    	    });
+    	}
 	}
 };
 
