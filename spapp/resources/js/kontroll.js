@@ -2,6 +2,7 @@ var kontroll = {
     apiEndpoint: "http://spkontroll.appspot.com",
 	sp: null,
 	models: null,
+	views: null,
 
 	init: function() {
 	    jQuery.support.cors = true;
@@ -20,7 +21,7 @@ var kontroll = {
 
 		// Handle items dropped'on your icon
         kontroll.models.application.observe(kontroll.models.EVENT.LINKSCHANGED, kontroll.links.changed);
-        
+
         // Handle items dropped in the app
         var drop = document.querySelector('#playlist-dnd');
     	drop.addEventListener('dragenter', kontroll.playlistDnd.dragEnter, false);
@@ -77,18 +78,20 @@ var kontroll = {
 	},
 
 	beacon: {
-	    listen: function(channels) {
+	    listen: function(channels)
+		{
 	        Beacon.connect('018efdb4', channels, {"log":true, "forceClient": "XhrLongPoll"});
 	        Beacon.listen(kontroll.beacon.message);
         },
-        message: function(eventInfo) {
+		
+        message: function(eventInfo)
+		{
     		if (eventInfo.recipient != "spapp")
     		{
     		    return;
     		}
 
     		console.debug("Beacon message, event: " + eventInfo.event);
-
     		switch(eventInfo.event)
     		{
     		    case "synced":
@@ -135,15 +138,12 @@ var kontroll = {
 		show: function(selectedPlaylist)
 		{
 	        kontroll.storage.selectedPlaylist(selectedPlaylist.uri);
-	        
+
 	        var list = new kontroll.views.List(selectedPlaylist);
 
             jQuery("#playlist-name").replaceWith(selectedPlaylist.name);
             jQuery("#playlist-content").append(list.node);
 
-            // jQuery("#playlist-content").children('a[href="+  "]')
-            // sp-track-selected sp-track-playing
-         
 		    jQuery("#playlist").show();
 		},
 
@@ -161,121 +161,11 @@ var kontroll = {
 	        jQuery("#sync-code").replaceWith(syncCode);
 	        jQuery("#sync").show();
 	    },
-	    
+
 	    hide: function()
 	    {
 	        jQuery("#sync").hide();
 	        kontroll.playlistDnd.show();
-	    }
-	},
-
-	deviceId: function()
-	{
-	    return kontroll.models.session.anonymousUserID;
-	},
-
-	storage:
-	{
-	    changed: function(event)
-        {
-    	    if (kontroll.storage.isSynced())
-    		{
-    		    var selectedPlaylist = kontroll.storage.selectedPlaylist();
-    		    if (selectedPlaylist != null)
-    		    {
-    		        kontroll.playlistDnd.hide(selectedPlaylist);
-		        }
-		        else
-		        {
-		            kontroll.playlistDnd.show();
-		        }
-    		}
-    		else
-    		{
-    		    kontroll.remote.deviceRegister(kontroll.deviceId(), function(syncCode)
-    		    {
-    		        kontroll.sync.show(syncCode);
-    		    });
-    		}
-		},
-		
-		isSynced: function(isSynced)
-	    {
-	        if (isSynced != undefined)
-	        {
-	            localStorage.setItem("synced", "true");
-	        }
-	        else
-	        {
-	            return (localStorage.getItem("synced") === "true");
-	        }
-	    },
-	    
-	    selectedPlaylist: function(playlistUri)
-	    {
-	        if (playlistUri != undefined)
-	        {
-	            localStorage.setItem("selectedPlaylist", playlistUri);
-	        }
-	        else
-	        {
-	            var playlistUri = localStorage.getItem("selectedPlaylist");
-	            if (playlistUri)
-	            {
-	                kontroll.models.Playlist.fromURI(playlistUri, function(playlist)
-            	    {
-            	        return playlist;
-            	    });
-	            }
-	            else
-	            {
-	                return null;
-	            }
-	        }
-	    }
-	},
-
-	remote:
-	{
-	    deviceRegister: function(deviceId, callback)
-	    {
-	        var url = kontroll.apiEndpoint + "/device/register";
-	        jQuery.post(url,
-	            JSON.stringify({"device_id": deviceId}),
-	            function(data, textStatus, jqXHR)
-	            {
-	                // {"device_id": ..., "sync_code": ..., "sync_code_expiry": ...}
-	                return callback(data.sync_code);
-	            },
-	            "json");
-	    },
-	    
-	    devicePlaystate: function(playstate, callback)
-	    {
-	        var url = kontroll.apiEndpoint + "/device/playstate";
-	        jQuery.post(url,
-	            JSON.stringify(playstate),
-	            function(data, textStatus, jqXHR)
-	            {
-	                return callback();
-	            },
-	            "json");
-	    }
-	},
-
-	links:
-	{
-	    changed: function()
-	    {
-        	var links = kontroll.models.application.links;
-        	if(links.length)
-        	{
-        	    var playlistUri = links[0];
-        	    kontroll.models.Playlist.fromURI(playlistUri, function(playlist)
-        	    {
-        	        kontroll.playlistDnd.hide(playlist);
-        	    });
-        	}
 	    }
 	},
 	
@@ -285,14 +175,13 @@ var kontroll = {
 	    {
 	        jQuery("#playlist-dnd").show();
 	    },
-	    
+
 	    hide: function(selectedPlaylist)
 	    {
-	        
 	        jQuery("#playlist-dnd").hide();
 	        kontroll.selectedPlaylist.show(selectedPlaylist);
 	    },
-	    
+
 	    dragEnter: function(e)
 	    {
     		this.style.background = '#444444';
@@ -319,7 +208,118 @@ var kontroll = {
     	        kontroll.playlistDnd.hide(playlist);
     	    });
     	}
+	},
+
+	storage:
+	{
+	    changed: function(event)
+        {
+    	    if (kontroll.storage.isSynced())
+    		{
+    		    var selectedPlaylist = kontroll.storage.selectedPlaylist();
+    		    if (selectedPlaylist != null)
+    		    {
+    		        kontroll.playlistDnd.hide(selectedPlaylist);
+		        }
+		        else
+		        {
+		            kontroll.playlistDnd.show();
+		        }
+    		}
+    		else
+    		{
+    		    kontroll.remote.deviceRegister(kontroll.deviceId(), function(syncCode)
+    		    {
+    		        kontroll.sync.show(syncCode);
+    		    });
+    		}
+		},
+
+		isSynced: function(isSynced)
+	    {
+	        if (isSynced != undefined)
+	        {
+	            localStorage.setItem("synced", "true");
+	        }
+	        else
+	        {
+	            return (localStorage.getItem("synced") === "true");
+	        }
+	    },
+
+	    selectedPlaylist: function(playlistUri)
+	    {
+	        if (playlistUri != undefined)
+	        {
+	            localStorage.setItem("selectedPlaylist", playlistUri);
+	        }
+	        else
+	        {
+	            var playlistUri = localStorage.getItem("selectedPlaylist");
+	            if (playlistUri)
+	            {
+	                kontroll.models.Playlist.fromURI(playlistUri, function(playlist)
+            	    {
+            	        return playlist;
+            	    });
+	            }
+	            else
+	            {
+	                return null;
+	            }
+	        }
+	    }
+	},
+	
+	links:
+	{
+	    changed: function()
+	    {
+        	var links = kontroll.models.application.links;
+        	if(links.length)
+        	{
+        	    var playlistUri = links[0];
+        	    kontroll.models.Playlist.fromURI(playlistUri, function(playlist)
+        	    {
+        	        kontroll.playlistDnd.hide(playlist);
+        	    });
+        	}
+	    }
+	},
+
+	remote:
+	{
+	    deviceRegister: function(deviceId, callback)
+	    {
+	        var url = kontroll.apiEndpoint + "/device/register";
+	        jQuery.post(url,
+	            JSON.stringify({"device_id": deviceId}),
+	            function(data, textStatus, jqXHR)
+	            {
+	                // {"device_id": ..., "sync_code": ..., "sync_code_expiry": ...}
+	                return callback(data.sync_code);
+	            },
+	            "json");
+	    },
+
+	    devicePlaystate: function(playstate, callback)
+	    {
+	        var url = kontroll.apiEndpoint + "/device/playstate";
+	        jQuery.post(url,
+	            JSON.stringify(playstate),
+	            function(data, textStatus, jqXHR)
+	            {
+	                return callback();
+	            },
+	            "json");
+	    }
+	},
+	
+	deviceId: function()
+	{
+	    return kontroll.models.session.anonymousUserID;
 	}
+	
 };
 
 $(document).ready(function() {
