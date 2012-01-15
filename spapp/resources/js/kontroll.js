@@ -258,10 +258,8 @@ var kontroll = {
 	            var playlistUri = localStorage.getItem("selectedPlaylist");
 	            if (playlistUri)
 	            {
-	                kontroll.models.Playlist.fromURI(playlistUri, function(playlist)
-            	    {
-            	        return playlist;
-            	    });
+	                var playlist = kontroll.models.Playlist.fromURI(playlistUri);
+					return playlist;
 	            }
 	            else
 	            {
