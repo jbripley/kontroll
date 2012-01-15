@@ -23,7 +23,13 @@
 		
 		<div id="sync" style="display: none;">
 			<h2>Sync with device</h2>
-			<p>Enter the following number on your device: <span id="sync-code"></span></p>
+			<p>Go to the following URL on your device: <span id="api-url"></span></p>
+			<p>and enter the following number: <input id="sync-code" type="number" min="100000" max="999999" pattern="\d*" /></p>
+		</div>
+		
+		<div id="playlist-dnd" style="display: none;">
+		    <h2>Select a Playlist</h2>
+		    <p>Drag and drop a playlist on the sidebar icon to play it with Kontroll</p>
 		</div>
 		
 		<div id="playlist" style="display: none;">

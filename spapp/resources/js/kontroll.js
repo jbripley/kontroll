@@ -2,24 +2,26 @@ var kontroll = {
     apiEndpoint: "http://spkontroll.appspot.com",
 	sp: null,
 	models: null,
-	
+
 	init: function() {
 	    jQuery.support.cors = true;
-	    
+
 		kontroll.sp = getSpotifyApi(1);
 		kontroll.models = kontroll.sp.require("sp://import/scripts/api/models");
 		kontroll.views = kontroll.sp.require("sp://import/scripts/api/views");
-		
+
 		kontroll.beacon.listen([kontroll.deviceId()]);
-		
+
 		kontroll.models.player.observe(kontroll.models.EVENT.CHANGE, kontroll.player.changed);
 		kontroll.player.changed();
-		
-		window.addEventListener("storage", kontroll.storageChanged(), false);
-		
-		//jQuery("body").addEventListener("drop", kontroll.selectedPlaylist.drop, false);
+
+		window.addEventListener("storage", kontroll.storage.changed, false);
+		kontroll.storage.changed();
+
+		// Handle items dropped'on your icon
+        kontroll.models.application.observe(kontroll.models.EVENT.LINKSCHANGED, kontroll.links.changed);
 	},
-	
+
 	player: {
 	    playstate: {"state": null, "song": {}},
 	    changed: function(event) {
@@ -33,14 +35,14 @@ var kontroll = {
 	        {
 	            playstate["state"] = "paused";
 	        }
-	        
+
 	        var song = {};
 	        if (kontroll.models.player.track)
 	        {
 	            song["uri"] = kontroll.models.player.track.uri;
 	            song["album"] = kontroll.models.player.track.album.name;
 	            song["track"] = kontroll.models.player.track.name;
-	            
+
 	            song["artists"] = [];
 	            jQuery.each(kontroll.models.player.track.artists, function(index, artist)
 	            {
@@ -48,7 +50,7 @@ var kontroll = {
 	            });
 	        }
 	        playstate["song"] = song;
-	        
+
 	        if (kontroll.player.playstate.state == playstate.state &&
 	            kontroll.player.playstate.song.uri == playstate.song.uri)
 	        {
@@ -56,9 +58,9 @@ var kontroll = {
 	            console.debug(playstate);
 	            return;
 	        }
-	        
+
 	        kontroll.player.playstate = playstate;
-	        
+
 	        kontroll.remote.devicePlaystate(playstate, function()
 	        {
 	            console.log("Updated playstate");
@@ -66,7 +68,7 @@ var kontroll = {
 	        });
 	    }
 	},
-	
+
 	beacon: {
 	    listen: function(channels) {
 	        Beacon.connect('018efdb4', channels, {"log":true, "forceClient": "XhrLongPoll"});
@@ -77,20 +79,18 @@ var kontroll = {
     		{
     		    return;
     		}
-    		
+
     		console.debug("Beacon message, event: " + eventInfo.event);
-    		
+
     		switch(eventInfo.event)
     		{
     		    case "synced":
     		    {
-    		        kontroll.sync.isSynced(true);
+    		        kontroll.storage.isSynced(true);
     		        kontroll.sync.hide();
-    		        
-    		        kontroll.selectedPlaylist.show();
     		    }
     		    break;
-    		    
+
     		    case "change_playstate":
     		    {
     		        console.debug("Playstate: " + eventInfo.data.state);
@@ -99,22 +99,22 @@ var kontroll = {
     		            case "play":
     		                kontroll.models.player.playing = true;
     		                break;
-    		                
+
     		            case "pause":
     		                kontroll.models.player.playing = false;
     		                break;
-    		            
+
     		            case "next":
     		                kontroll.models.player.next();
     		                break;
-    		            
+
     		            case "previous":
     		                kontroll.models.player.previous(false);
     		                break;
     		        }
     		    }
     		    break;
-    		    
+
     		    default:
     		    {
     		        console.debug("Unknown event from beacon: " + eventInfo.event);
@@ -122,48 +122,77 @@ var kontroll = {
     		}
     	}
 	},
-	
-	selectedPlaylist: {
-		"name": "Den Stora Festen(tm) - Middag",
-		"playlistUri": "spotify:user:nollbit:playlist:7gggs0YIY6KjYE2IqD49Yj",
-		
-		show: function()
-		{
-		    var pl = kontroll.models.Playlist.fromURI(kontroll.selectedPlaylist.playlistUri);
-            var list = new kontroll.views.List(pl);
 
-            jQuery("#playlist-name").replaceWith(kontroll.selectedPlaylist.name);
+	selectedPlaylist:
+	{
+		show: function(selectedPlaylist)
+		{
+	        kontroll.storage.selectedPlaylist(selectedPlaylist.uri);
+	        
+	        var list = new kontroll.views.List(selectedPlaylist);
+
+            jQuery("#playlist-name").replaceWith(selectedPlaylist.name);
             jQuery("#playlist-content").append(list.node);
-            
+
             // jQuery("#playlist-content").children('a[href="+  "]')
-            
             // sp-track-selected sp-track-playing
+         
 		    jQuery("#playlist").show();
 		},
-		
+
 		hide: function()
 		{
 		    jQuery("#playlist").hide();
-		},
-		
-		drop: function(event)
-		{
-		    event.stopPropagation(); // Stops some browsers from redirecting.
-            event.preventDefault();
 		}
 	},
-	
-	sync: {
+
+	sync:
+	{
 	    show: function(syncCode)
 	    {
+	        jQuery("#api-url").replaceWith(kontroll.apiEndpoint);
 	        jQuery("#sync-code").replaceWith(syncCode);
 	        jQuery("#sync").show();
 	    },
+	    
 	    hide: function()
 	    {
 	        jQuery("#sync").hide();
-	    },
-	    isSynced: function(isSynced)
+	        kontroll.playlistDnd.show();
+	    }
+	},
+
+	deviceId: function()
+	{
+	    return kontroll.models.session.anonymousUserID;
+	},
+
+	storage:
+	{
+	    changed: function(event)
+        {
+    	    if (kontroll.storage.isSynced())
+    		{
+    		    var selectedPlaylist = kontroll.storage.selectedPlaylist();
+    		    if (selectedPlaylist != null)
+    		    {
+    		        kontroll.playlistDnd.hide(selectedPlaylist);
+		        }
+		        else
+		        {
+		            kontroll.playlistDnd.show();
+		        }
+    		}
+    		else
+    		{
+    		    kontroll.remote.deviceRegister(kontroll.deviceId(), function(syncCode)
+    		    {
+    		        kontroll.sync.show(syncCode);
+    		    });
+    		}
+		},
+		
+		isSynced: function(isSynced)
 	    {
 	        if (isSynced != undefined)
 	        {
@@ -173,36 +202,32 @@ var kontroll = {
 	        {
 	            return (localStorage.getItem("synced") === "true");
 	        }
+	    },
+	    
+	    selectedPlaylist: function(playlistUri)
+	    {
+	        if (playlistUri != undefined)
+	        {
+	            localStorage.setItem("selectedPlaylist", playlistUri);
+	        }
+	        else
+	        {
+	            var playlistUri = localStorage.getItem("selectedPlaylist");
+	            if (playlistUri)
+	            {
+	                kontroll.models.Playlist.fromURI(playlistUri, function(playlist)
+            	    {
+            	        return playlist;
+            	    });
+	            }
+	            else
+	            {
+	                return null;
+	            }
+	        }
 	    }
 	},
-	
-	deviceId: function()
-	{
-	    return kontroll.models.session.anonymousUserID;
-	},
-	
-	storageChanged: function(event)
-	{
-	    
-	    if (kontroll.sync.isSynced())
-		{
-		    kontroll.selectedPlaylist.show();
-		}
-		else
-		{
-		    kontroll.remote.deviceRegister(kontroll.deviceId(), function(syncCode)
-		    {
-		        kontroll.sync.show(syncCode);
-		    });
-		}
-		
-		selectedPlaylist = localStorage.getItem("selectedPlaylist");
-		if (selectedPlaylist)
-		{
-		    kontroll.selectedPlaylist = JSON.parse(selectedPlaylist);
-		}
-	},
-	
+
 	remote:
 	{
 	    deviceRegister: function(deviceId, callback)
@@ -217,6 +242,7 @@ var kontroll = {
 	            },
 	            "json");
 	    },
+	    
 	    devicePlaystate: function(playstate, callback)
 	    {
 	        var url = kontroll.apiEndpoint + "/device/playstate";
@@ -229,6 +255,36 @@ var kontroll = {
 	            "json");
 	    }
 	},
+
+	links:
+	{
+	    changed: function()
+	    {
+        	var links = kontroll.models.application.links;
+        	if(links.length)
+        	{
+        	    var playlistUri = links[0];
+        	    kontroll.models.Playlist.fromURI(playlistUri, function(playlist)
+        	    {
+        	        kontroll.playlistDnd.hide(playlist);
+        	    });
+        	}
+	    }
+	},
+	
+	playlistDnd:
+	{
+	    show: function()
+	    {
+	        jQuery("#playlist-dnd").show();
+	    },
+	    
+	    hide: function(selectedPlaylist)
+	    {
+	        jQuery("#playlist-dnd").hide();
+	        kontroll.selectedPlaylist.show(selectedPlaylist);
+	    }
+	}
 };
 
 $(document).ready(function() {
