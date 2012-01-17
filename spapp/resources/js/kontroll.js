@@ -20,7 +20,10 @@ var kontroll = {
 		kontroll.storage.changed();
 
 		// Handle items dropped'on your icon
-        kontroll.models.application.observe(kontroll.models.EVENT.LINKSCHANGED, kontroll.links.changed);
+		if (kontroll.models.application)
+		{
+			kontroll.models.application.observe(kontroll.models.EVENT.LINKSCHANGED, kontroll.links.changed);
+		}
 
         // Handle items dropped in the app
         var drop = document.querySelector('#playlist-dnd');
@@ -266,7 +269,19 @@ var kontroll = {
 	                return null;
 	            }
 	        }
-	    }
+	    },
+		
+		deviceId: function(deviceId)
+		{
+	        if (deviceId != undefined)
+	        {
+	            localStorage.setItem("deviceId", deviceId);
+	        }
+	        else
+	        {
+	            return localStorage.getItem("deviceId");
+	        }
+		}
 	},
 	
 	links:
@@ -315,9 +330,27 @@ var kontroll = {
 	
 	deviceId: function()
 	{
-	    return kontroll.models.session.anonymousUserID;
+	    var deviceId = kontroll.storage.deviceId();
+		if (deviceId == null)
+		{
+			if (kontroll.models.session && kontroll.models.session.anonymousUserID)
+			{
+				deviceId = kontroll.models.session.anonymousUserID	
+			}
+			else
+			{
+				// http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
+				deviceId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+				    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+				    return v.toString(16);
+				});
+			}
+			
+			kontroll.storage.deviceId(deviceId);
+		}
+		
+		return deviceId;
 	}
-	
 };
 
 $(document).ready(function() {
