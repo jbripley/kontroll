@@ -10,9 +10,9 @@ var kontroll = {
 		$("#song").hide(200, function(){
             if (song == null) return;
              
-			$("#song_artist").text(song.artists.join(", "));
-			$("#song_album").text(song.album);
-			$("#song_track").text(song.track);
+			$("#song_artist").html(song.artists.join(", "));
+			$("#song_album").html(song.album);
+			$("#song_track").html(song.track);
 			$("#song").show(200);
 		});
 	},
