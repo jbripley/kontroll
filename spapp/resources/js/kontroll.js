@@ -13,8 +13,8 @@ var kontroll = {
 
 		kontroll.beacon.listen([kontroll.deviceId()]);
 
-		kontroll.models.player.observe(kontroll.models.EVENT.CHANGE, kontroll.player.changed);
-		kontroll.player.changed();
+		kontroll.models.player.observe(kontroll.models.EVENT.CHANGE, 
+		kontroll.player.changed);
 
 		window.addEventListener("storage", kontroll.storage.changed, false);
 		kontroll.storage.changed();
@@ -31,11 +31,14 @@ var kontroll = {
     	drop.addEventListener('dragover', kontroll.playlistDnd.dragOver, false);
     	drop.addEventListener('dragleave', kontroll.playlistDnd.dragLeave, false);
     	drop.addEventListener('drop', kontroll.playlistDnd.drop, false);
+		
+		jQuery("#resync-button").click(kontroll.storage.clear);
 	},
 
 	player: {
 	    playstate: {"state": null, "song": {}},
-	    changed: function(event) {
+	    changed: function(event)
+		{	
 	        // >> {"device_id": ..., "state": ["playing" | "paused" | "stopped" | "ads"], song: {"uri": ..., "artist": ..., "album": ..., "track": ...}}
 	        var playstate = {"device_id": kontroll.deviceId()};
 	        if (kontroll.models.player.playing === true)
@@ -100,7 +103,6 @@ var kontroll = {
     		    case "synced":
     		    {
     		        kontroll.storage.isSynced(true);
-    		        kontroll.sync.hide();
     		    }
     		    break;
 
@@ -148,6 +150,7 @@ var kontroll = {
             jQuery("#playlist-content").append(list.node);
 
 		    jQuery("#playlist").show();
+			kontroll.player.changed();
 		},
 
 		hide: function()
@@ -163,10 +166,14 @@ var kontroll = {
 	        jQuery("#api-url").replaceWith(kontroll.apiEndpoint);
 	        jQuery("#sync-code").replaceWith(syncCode);
 	        jQuery("#sync").show();
+			
+			jQuery("#resync-button").hide();
 	    },
 
 	    hide: function()
 	    {
+			jQuery("#resync-button").show();
+			
 	        jQuery("#sync").hide();
 	        kontroll.playlistDnd.show();
 	    }
@@ -182,7 +189,10 @@ var kontroll = {
 	    hide: function(selectedPlaylist)
 	    {
 	        jQuery("#playlist-dnd").hide();
-	        kontroll.selectedPlaylist.show(selectedPlaylist);
+			if (selectedPlaylist)
+			{
+				kontroll.selectedPlaylist.show(selectedPlaylist);
+			}
 	    },
 
 	    dragEnter: function(e)
@@ -217,8 +227,12 @@ var kontroll = {
 	{
 	    changed: function(event)
         {
+			kontroll.selectedPlaylist.hide();
+			
     	    if (kontroll.storage.isSynced())
     		{
+				kontroll.sync.hide();
+				
     		    var selectedPlaylist = kontroll.storage.selectedPlaylist();
     		    if (selectedPlaylist != null)
     		    {
@@ -243,6 +257,7 @@ var kontroll = {
 	        if (isSynced != undefined)
 	        {
 	            localStorage.setItem("synced", "true");
+				kontroll.storage.changed();
 	        }
 	        else
 	        {
@@ -281,6 +296,13 @@ var kontroll = {
 	        {
 	            return localStorage.getItem("deviceId");
 	        }
+		},
+		
+		clear: function()
+		{
+			kontroll.player.playlistState = {"state": null, "song": {}};
+			localStorage.clear();
+			kontroll.storage.changed();
 		}
 	},
 	
