@@ -7,6 +7,6 @@ body {
 #song {
 	display: none;
 }
-button.active {
+#playstate_playpause {
 	font-weight: bold;
 }

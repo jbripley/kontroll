@@ -20,20 +20,21 @@ var kontroll = {
 		console.log("onPlaystateChanged");
 
 		var playstate = e.data.state;
-		var verb = {
-			"playing": "play",
-			"paused": "pause",
-			"ads": null, // special case
-		}[playstate];
-		
 		console.log("Playstate from spapp: " + playstate);
-		console.log("Playstate verb: " + verb);
 		
 		$("button.playstate").removeClass("active");
-		if (verb != null) {
-			$("#playstate_"+verb).addClass("active");
+		switch(playstate)
+		{
+			case "playing":
+				$("#playstate_playpause").data("playstate", "pause");
+				$("#playstate_playpause").html("&#9654;");
+				break;
+			
+			case "paused"
+				$("#playstate_playpause").data("playstate", "play");
+				$("#playstate_playpause").html("||");
+				break;
 		}
-		
 		
 		var song = null;
 		var songUri = null;
