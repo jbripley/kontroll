@@ -25,13 +25,13 @@ var kontroll = {
 		$("button.playstate").removeClass("active");
 		switch(playstate)
 		{
-			case "playing":
-				$("#playstate_playpause").data("playstate", "pause");
+			case "paused":
+				$("#playstate_playpause").data("playstate", "play");
 				$("#playstate_playpause").html("&#9654;");
 				break;
 			
-			case "paused"
-				$("#playstate_playpause").data("playstate", "play");
+			case "playing":
+				$("#playstate_playpause").data("playstate", "pause");
 				$("#playstate_playpause").html("||");
 				break;
 		}
