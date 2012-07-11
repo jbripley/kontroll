@@ -1,24 +1,20 @@
 {
-    "RequiredInterface": 1,
+    "BundleType": "Application",
+    "BundleIdentifier": "kontroll",
+    "BundleVersion": "0.1",
+    "AppIcon": {
+        "36x18": "tutorial.png"
+    },
     "AppName": {
         "en": "Kontroll"
     },
     "AppDescription": {
         "en": "Kontroll description"
     },
-    "AppIcon": {
-        "18x18": "resources/icon/18x18.png",
-        "64x64": "resources/icon/18x18.png",
-        "128x128": "resources/icon/18x18.png"
-    },
     "AppUrl": "http://spkontroll.appspot.com",
-    "BundleIdentifier": "spkontroll.appspot.com",
-    "BundleType": "Application",
-    "BundleVersion": "0.1",
     "SupportedLanguages": [
         "en"
     ],
-    "VendorIdentifier": "spkonsoll.appspot.com",
     "RequiredPermissions": [
         "http://*.beaconpush.com",
         "http://spkontroll.appspot.com"
