@@ -20,7 +20,7 @@ var kontroll = {
         window.addEventListener("storage", kontroll.storage.changed, false);
         kontroll.storage.changed();
 
-        // Handle items dropped'on your icon
+        // Handle items dropped on your icon
         if (kontroll.models.application)
         {
             kontroll.models.application.observe(kontroll.models.EVENT.LINKSCHANGED, kontroll.links.changed);
@@ -95,8 +95,7 @@ var kontroll = {
 
         message: function(eventInfo)
         {
-            if (eventInfo.recipient != "spapp")
-            {
+            if (eventInfo.recipient != "spapp") {
                 return;
             }
 
@@ -104,13 +103,10 @@ var kontroll = {
             switch (eventInfo.event)
             {
                 case "synced":
-                {
                     kontroll.storage.isSynced(true);
-                }
                     break;
 
                 case "change_playstate":
-                {
                     console.debug("Playstate: " + eventInfo.data.state);
                     switch (eventInfo.data.state)
                     {
@@ -130,13 +126,11 @@ var kontroll = {
                             kontroll.models.player.previous(false);
                             break;
                     }
-                }
                     break;
 
                 default:
-                {
                     console.debug("Unknown event from beacon: " + eventInfo.event);
-                }
+                    break;
             }
         }
     },
@@ -237,7 +231,7 @@ var kontroll = {
                 kontroll.sync.hide();
 
                 var selectedPlaylist = kontroll.storage.selectedPlaylist();
-                if (selectedPlaylist != null)
+                if (selectedPlaylist !== null)
                 {
                     kontroll.playlistDnd.hide(selectedPlaylist);
                 }
@@ -257,7 +251,7 @@ var kontroll = {
 
         isSynced: function(isSynced)
         {
-            if (isSynced != undefined)
+            if (isSynced !== undefined)
             {
                 localStorage.setItem("synced", "true");
                 kontroll.storage.changed();
@@ -270,13 +264,13 @@ var kontroll = {
 
         selectedPlaylist: function(playlistUri)
         {
-            if (playlistUri != undefined)
+            if (playlistUri !== undefined)
             {
                 localStorage.setItem("selectedPlaylist", playlistUri);
             }
             else
             {
-                var playlistUri = localStorage.getItem("selectedPlaylist");
+                playlistUri = localStorage.getItem("selectedPlaylist");
                 if (playlistUri)
                 {
                     var playlist = kontroll.models.Playlist.fromURI(playlistUri);
@@ -291,7 +285,7 @@ var kontroll = {
 
         deviceId: function(deviceId)
         {
-            if (deviceId != undefined)
+            if (deviceId !== undefined)
             {
                 localStorage.setItem("deviceId", deviceId);
             }
@@ -356,11 +350,11 @@ var kontroll = {
     deviceId: function()
     {
         var deviceId = kontroll.storage.deviceId();
-        if (deviceId == null)
+        if (deviceId === null)
         {
             if (kontroll.models.session && kontroll.models.session.anonymousUserID)
             {
-                deviceId = kontroll.models.session.anonymousUserID
+                deviceId = kontroll.models.session.anonymousUserID;
             }
             else
             {
